@@ -10,7 +10,7 @@ API_URL = "https://api.carbonintensity.org.uk/intensity"
 TOPIC = "carbon.intensity.uk"
 KAFKA_BOOTSTRAP = "localhost:9092"
 
-POLL_SECONDS = 60    #polling every minute 
+POLL_SECONDS = 60 
 def make_event_id(from_ts: str, to_ts: str) -> str:
     raw = f"{from_ts}|{to_ts}|NATIONAL"
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
@@ -19,7 +19,7 @@ def delivery_report(err, msg):
     if err is not None:
         print(f"[KAFKA] Delivery failed: {err}")
     else:
-        pass  # keep quiet; too noisy otherwise
+        pass
 
 def fetch_intensity():
     r = requests.get(API_URL, timeout=10)
@@ -35,7 +35,6 @@ def main():
 
         try:
             payload = fetch_intensity()
-            # API returns {"data":[{from,to,intensity:{forecast,actual,index}}]}
             rows = payload.get("data", [])
             if not rows:
                 print("[PRODUCER] No data returned.")

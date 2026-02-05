@@ -9,7 +9,7 @@ CHECKPOINT_PATH = "data/delta/_checkpoints/silver_carbon_intensity"
 
 import os
 
-# ---- Environment Checks for Windows ----
+# Windows Environment Setup
 if os.name == 'nt':
     if 'JAVA_HOME' not in os.environ:
         known_java = r"C:\Program Files\Microsoft\jdk-17.0.18.8-hotspot"
@@ -28,7 +28,7 @@ builder = (
     SparkSession.builder.appName("bronze_to_silver")
     .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
     .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
-    # ---- Windows local filesystem fixes ----
+    # Windows filesystem config
     .config("spark.hadoop.fs.file.impl", "org.apache.hadoop.fs.LocalFileSystem")
     .config("spark.hadoop.fs.AbstractFileSystem.file.impl", "org.apache.hadoop.fs.local.LocalFs")
     .config("spark.hadoop.io.native.lib.available", "false")
@@ -43,11 +43,8 @@ bronze = spark.readStream.format("delta").load(BRONZE_PATH)
 # Convert fetched_at to timestamp for ordering
 with_ts = bronze.withColumn("fetched_at_ts", to_timestamp(col("fetched_at")))
 
-# Window definition moved inside upsert_to_silver because it's not supported on streaming DataFrames
-
 def upsert_to_silver(microbatch_df, batch_id: int):
-    # Keep latest record per event_id per micro-batch
-    # (Window functions are valid here on the static microbatch_df)
+    # Deduplicate by event_id
     w = Window.partitionBy("event_id").orderBy(col("fetched_at_ts").desc())
     microbatch_df = (
         microbatch_df
@@ -95,7 +92,7 @@ def upsert_to_silver(microbatch_df, batch_id: int):
 query = (
     with_ts.writeStream
     .foreachBatch(upsert_to_silver)
-    .outputMode("update")  # update/append both work; foreachBatch controls writes
+    .outputMode("update")
     .option("checkpointLocation", CHECKPOINT_PATH)
     .start()
 )
