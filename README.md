@@ -4,9 +4,9 @@
 
 ## Overview
 
-Welcome to the **NESO UK Carbon Intensity Streaming Lakehouse**. This project allows you to build a real-time data pipeline that ingests, processes, and visualizes carbon intensity data from the UK National Grid ESO API.
+This project is a real-time data pipeline that ingests, processes, and visualizes carbon intensity data from the UK National Energy System Operator (NESO) API.
 
-It demonstrates a full "Medallion Architecture" (Bronze -> Silver -> Gold) using **Apache Spark Structured Streaming**, **Delta Lake**, and **Kafka**, all culminating in a live **Streamlit** dashboard.
+It demonstrates a full "Medallion Architecture" (Bronze to Silver to Gold) using **Apache Spark Structured Streaming**, **Delta Lake**, and **Kafka**, all resulting in a live **Streamlit** dashboard.
 
 ## System Architecture
 
